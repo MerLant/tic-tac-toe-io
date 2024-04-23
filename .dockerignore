@@ -1,0 +1,6 @@
+node_modules
+tic-tac
+.git
+.gitignore
+*.md
+dist

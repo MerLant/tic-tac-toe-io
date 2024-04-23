@@ -5,17 +5,19 @@
   "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node server.ts"
+    "start": "ts-node server.ts",
+    "dev": "nodemon --exec ts-node server.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@9.0.4+sha256.caa915eaae9d9aefccf50ee8aeda25a2f8684d8f9d5c6e367eaf176d97c1f89e",
   "dependencies": {
+    "@types/ws": "^8.5.10",
     "ts-node": "^10.9.2",
     "ws": "^8.16.0"
   },
   "devDependencies": {
-    "@types/ws": "^8.5.10"
+    "nodemon": "^3.1.0"
   }
 }

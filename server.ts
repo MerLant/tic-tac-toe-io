@@ -26,8 +26,6 @@ wss.on("connection", function connection(ws: WebSocket) {
       y: number;
     };
 
-    console.log("Message", type, playerID, x, y);
-
     if (type === "search_game") {
       handleGameSearch(ws, playerID);
     } else if (type === "make_move") {
@@ -44,7 +42,7 @@ wss.on("connection", function connection(ws: WebSocket) {
       const otherPlayer =
         game.player1.ws === ws ? game.player2.ws : game.player1.ws;
       otherPlayer.send(
-        JSON.stringify({ type: "game_end", reason: "opponent_disconnected" }),
+        JSON.stringify({ type: "game_end", winner: "opponent_disconnected" }),
       );
       activeGames = activeGames.filter((g) => g !== game);
     }
@@ -54,6 +52,7 @@ wss.on("connection", function connection(ws: WebSocket) {
 function handleMove(
   ws: WebSocket,
   playerID: string,
+
   x: number,
   y: number,
 ): void {
@@ -128,17 +127,40 @@ function processGameAfterMove(
   mark: "X" | "O",
 ): void {
   if (checkWin(game.board, mark)) {
-    console.log("Win", playerID);
     concludeGame(game, game.currentPlayer.playerID);
+  } else if (checkDraw(game.board)) {
+    concludeGame(game, "draw");
   } else {
     switchCurrentPlayer(game);
     broadcastGameState(game);
   }
 }
 
+function checkDraw(board: ("X" | "O" | null)[][]): boolean {
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[i][j] === null) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 function concludeGame(game: Game, winnerID: string): void {
-  game.player1.ws.send(JSON.stringify({ type: "game_end", winner: winnerID }));
-  game.player2.ws.send(JSON.stringify({ type: "game_end", winner: winnerID }));
+  game.player1.ws.send(
+    JSON.stringify({
+      type: "game_end",
+      winner: winnerID,
+    }),
+  );
+  game.player2.ws.send(
+    JSON.stringify({
+      type: "game_end",
+      winner: winnerID,
+    }),
+  );
   activeGames = activeGames.filter((g) => g !== game);
 }
 
@@ -196,7 +218,10 @@ function startGame(
     board: Array(3)
       .fill(null)
       .map(() => Array(3).fill(null)),
-    currentPlayer: { ws: ws1, playerID: playerID1 } as Player,
+    currentPlayer: {
+      ws: ws1,
+      playerID: playerID1,
+    } as Player,
   };
 
   const gameInfo = {
